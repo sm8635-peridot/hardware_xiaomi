@@ -311,7 +311,7 @@ void SysfsPollingOneShotSensor::run() {
                 continue;
             }
 
-            if (mPolls[1].revents == mPolls[1].events && readBool(mPollFd, true /* seek */)) {
+            if (mPolls[1].revents == mPolls[1].events && readFd(mPollFd)) {
                 activate(false, false, false);
                 mCallback->postEvents(readEvents(), isWakeUpSensor());
             } else if (mPolls[0].revents == mPolls[0].events) {
@@ -377,6 +377,11 @@ bool UdfpsSensor::readFd(const int fd) {
     }
     return state > 0;
 }
+
+bool SysfsPollingOneShotSensor::readFd(const int fd) {
+    return readBool(fd, true /* seek */);
+}
+
 }  // namespace implementation
 }  // namespace subhal
 }  // namespace V2_1
