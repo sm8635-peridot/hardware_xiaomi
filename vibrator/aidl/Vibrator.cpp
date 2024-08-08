@@ -76,6 +76,7 @@ namespace vibrator {
 #define MSM_CPU_CAPE            530
 #define APQ_CPU_CAPE            531
 #define MSM_CPU_KALAMA          519
+#define MSM_CPU_PINEAPPLE       614
 
 #define test_bit(bit, array)    ((array)[(bit)/8] & (1<<((bit)%8)))
 
