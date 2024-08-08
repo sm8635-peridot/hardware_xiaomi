@@ -273,6 +273,14 @@ int InputFFDevice::play(int effectId, uint32_t timeoutMs, long *playLengthMs) {
             if (stream != NULL && stream->play_rate_hz != 0)
                 *playLengthMs = ((stream->length * 1000) / stream->play_rate_hz) + 1;
 #endif
+            char prop_str[PROPERTY_VALUE_MAX];
+            if (property_get("ro.hardware.vibrator.playLengthMs", prop_str, NULL)) {
+                long propValue = atol(prop_str);
+                if (propValue != 0) {
+                    *playLengthMs = propValue;
+                    ALOGI("playLengthMs overridden by property: %ld ms", propValue);
+                }
+            }
         }
 
         play.value = 1;
