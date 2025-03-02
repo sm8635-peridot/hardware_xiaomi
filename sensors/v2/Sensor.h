@@ -97,14 +97,12 @@ class OneShotSensor : public Sensor {
 class SysfsPollingOneShotSensor : public OneShotSensor {
   public:
     SysfsPollingOneShotSensor(int32_t sensorHandle, ISensorsEventCallback* callback,
-                              const std::string& pollPath, const std::string& enablePath,
-                              const std::string& name, const std::string& typeAsString,
-                              SensorType type);
+                              const std::string& pollPath, const std::string& name,
+                              const std::string& typeAsString, SensorType type);
     virtual ~SysfsPollingOneShotSensor() override;
 
     virtual void activate(bool enable) override;
     virtual void activate(bool enable, bool notify, bool lock);
-    virtual void writeEnable(bool enable);
     virtual void setOperationMode(OperationMode mode) override;
     virtual std::vector<Event> readEvents() override;
     virtual void fillEventData(Event& event);
@@ -112,8 +110,6 @@ class SysfsPollingOneShotSensor : public OneShotSensor {
 
   protected:
     virtual void run() override;
-
-    std::ofstream mEnableStream;
 
   private:
     void interruptPoll();
@@ -130,7 +126,7 @@ class DoubleTapSensor : public SysfsPollingOneShotSensor {
     DoubleTapSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
         : SysfsPollingOneShotSensor(
               sensorHandle, callback, kTsDoubleTapPressedPath,
-              "Double Tap Sensor", "org.yaap.sensor.double_tap",
+              "Double Tap Sensor", "org.lineageos.sensor.double_tap",
               static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 1)) {}
 };
 
@@ -141,7 +137,7 @@ class SingleTapSensor : public SysfsPollingOneShotSensor {
     SingleTapSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
         : SysfsPollingOneShotSensor(
               sensorHandle, callback, kTsSingleTapPressedPath,
-              "Single Tap Sensor", "org.yaap.sensor.single_tap",
+              "Single Tap Sensor", "org.lineageos.sensor.single_tap",
               static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 2)) {}
 };
 
@@ -161,7 +157,7 @@ class UdfpsSensor : public SysfsPollingOneShotSensor {
     UdfpsSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
         : SysfsPollingOneShotSensor(
               sensorHandle, callback, kTsUdfpsPaths[0],  // Use first path as primary
-              "UDFPS Sensor", "org.yaap.sensor.udfps",
+              "UDFPS Sensor", "org.lineageos.sensor.udfps",
               static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 3)) {
         mSecondaryPath = kTsUdfpsPaths.size() > 1 ? kTsUdfpsPaths[1] : "";
     }
