@@ -143,13 +143,15 @@ class SingleTapSensor : public SysfsPollingOneShotSensor {
               static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 2)) {}
 };
 
+const std::string kTsUdfpsPath = UDFPS_PATH;
+
 class UdfpsSensor : public SysfsPollingOneShotSensor {
   public:
     UdfpsSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
         : SysfsPollingOneShotSensor(
-                sensorHandle, callback, "/sys/class/touch/touch_dev/fod_press_status",
-                "UDFPS Sensor", "org.yaap.sensor.udfps",
-                  static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) +3)) {}
+              sensorHandle, callback, kTsUdfpsPath,
+              "UDFPS Sensor", "org.yaap.sensor.udfps",
+              static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 3)) {}
     virtual void fillEventData(Event& event);
     virtual bool readFd(const int fd);
 
