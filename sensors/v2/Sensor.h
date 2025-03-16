@@ -27,6 +27,8 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <string>
+#include <sstream>
 
 using ::android::hardware::sensors::V1_0::OperationMode;
 using ::android::hardware::sensors::V1_0::Result;
@@ -143,19 +145,32 @@ class SingleTapSensor : public SysfsPollingOneShotSensor {
               static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 2)) {}
 };
 
-const std::string kTsUdfpsPath = UDFPS_PATH;
+const std::vector<std::string> kTsUdfpsPaths = []() {
+    std::vector<std::string> paths;
+    std::string pathStr = UDFPS_PATH;
+    std::stringstream ss(pathStr);
+    std::string path;
+    while (std::getline(ss, path, ',')) {
+        paths.push_back(path);
+    }
+    return paths;
+}();
 
 class UdfpsSensor : public SysfsPollingOneShotSensor {
   public:
     UdfpsSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
         : SysfsPollingOneShotSensor(
-              sensorHandle, callback, kTsUdfpsPath,
+              sensorHandle, callback, kTsUdfpsPaths[0],  // Use first path as primary
               "UDFPS Sensor", "org.yaap.sensor.udfps",
-              static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 3)) {}
-    virtual void fillEventData(Event& event);
-    virtual bool readFd(const int fd);
+              static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 3)) {
+        mSecondaryPath = kTsUdfpsPaths.size() > 1 ? kTsUdfpsPaths[1] : "";
+    }
 
-  private:
+    bool readFd(const int fd) override;
+    void fillEventData(Event& event) override;
+
+private:
+    std::string mSecondaryPath;
     int mScreenX;
     int mScreenY;
 };
