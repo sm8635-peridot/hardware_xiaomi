@@ -39,7 +39,7 @@ static const fingerprint_hal_t kModules[] = {
 static const uint16_t kVersion = HARDWARE_MODULE_API_VERSION(2, 1);
 static Fingerprint* sInstance;
 
-Fingerprint::Fingerprint() {
+Fingerprint::Fingerprint(std::shared_ptr<FingerprintConfig> config) : mConfig(std::move(config)) {
     sInstance = this;  // keep track of the most recent instance
 
     if (mDevice) {
@@ -59,7 +59,7 @@ Fingerprint::Fingerprint() {
                 class_module_id = FINGERPRINT_HARDWARE_MODULE_ID;
             }
 
-            mDevice = openSensorHal(class_name.c_str(), class_module_id.c_str());
+            mDevice = openFingerprintHal(class_name.c_str(), class_module_id.c_str());
             if (!mDevice) {
                 ALOGE("Can't open HAL module, class: %s, module_id: %s", class_name.c_str(),
                       class_module_id.c_str());
@@ -74,7 +74,7 @@ Fingerprint::Fingerprint() {
         }
     }
 
-    std::string sensorTypeProp = Fingerprint::cfg().get<std::string>("type");
+    std::string sensorTypeProp = mConfig->get<std::string>("type");
     if (sensorTypeProp == "udfps" || sensorTypeProp == "udfps_optical") {
         if (sensorTypeProp == "udfps") {
             mSensorType = FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC;
@@ -123,7 +123,8 @@ Fingerprint::~Fingerprint() {
     mDevice = nullptr;
 }
 
-fingerprint_device_t* Fingerprint::openSensorHal(const char* class_name, const char* module_id) {
+fingerprint_device_t* Fingerprint::openFingerprintHal(const char* class_name,
+                                                      const char* module_id) {
     const hw_module_t* hw_mdl = nullptr;
 
     ALOGD("Opening fingerprint hal library...");
@@ -161,7 +162,7 @@ fingerprint_device_t* Fingerprint::openSensorHal(const char* class_name, const c
 std::vector<SensorLocation> Fingerprint::getSensorLocations() {
     std::vector<SensorLocation> locations;
 
-    auto loc = Fingerprint::cfg().get<std::string>("sensor_location");
+    auto loc = mConfig->get<std::string>("sensor_location");
     auto entries = ::android::base::Split(loc, ",");
 
     for (const auto& entry : entries) {
@@ -175,7 +176,7 @@ std::vector<SensorLocation> Fingerprint::getSensorLocations() {
             }
         } else {
             int32_t x, y, r;
-            std::string d = "";
+            std::string d;
             isValidStr = ParseInt(dim[0], &x) && ParseInt(dim[1], &y) && ParseInt(dim[2], &r);
             if (dim.size() == 4) {
                 d = dim[3];
@@ -206,12 +207,12 @@ ndk::ScopedAStatus Fingerprint::getSensorProps(std::vector<SensorProps>* out) {
             {HW_COMPONENT_ID, HW_VERSION, FW_VERSION, SERIAL_NUMBER, "" /* softwareVersion */},
             {SW_COMPONENT_ID, "" /* hardwareVersion */, "" /* firmwareVersion */,
              "" /* serialNumber */, SW_VERSION}};
-    auto sensorId = Fingerprint::cfg().get<std::int32_t>("sensor_id");
-    auto sensorStrength = Fingerprint::cfg().get<std::int32_t>("sensor_strength");
-    auto navigationGuesture = Fingerprint::cfg().get<bool>("navigation_gesture");
-    auto detectInteraction = Fingerprint::cfg().get<bool>("detect_interaction");
-    auto displayTouch = Fingerprint::cfg().get<bool>("display_touch");
-    auto controlIllumination = Fingerprint::cfg().get<bool>("control_illumination");
+    auto sensorId = mConfig->get<std::int32_t>("sensor_id");
+    auto sensorStrength = mConfig->get<std::int32_t>("sensor_strength");
+    auto navigationGuesture = mConfig->get<bool>("navigation_gesture");
+    auto detectInteraction = mConfig->get<bool>("detect_interaction");
+    auto displayTouch = mConfig->get<bool>("display_touch");
+    auto controlIllumination = mConfig->get<bool>("control_illumination");
 
     common::CommonProps commonProps = {sensorId, (common::SensorStrength)sensorStrength,
                                        MAX_ENROLLMENTS_PER_USER, componentInfo};

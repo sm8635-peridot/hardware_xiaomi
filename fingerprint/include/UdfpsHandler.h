@@ -7,7 +7,11 @@
 #pragma once
 
 #include <stdint.h>
+#ifndef DEVICE_USES_NEW_IMPLEMENTATION
+#include "fingerprint-legacy.h"
+#else
 #include "fingerprint.h"
+#endif
 
 class UdfpsHandler {
   public:
@@ -18,6 +22,8 @@ class UdfpsHandler {
     virtual void onFingerUp() {};
 
     virtual void onAcquired(int32_t result, int32_t vendorCode) {};
+    virtual void onAuthenticationSucceeded() {};
+    virtual void onAuthenticationFailed() {};
     virtual void cancel() {};
 };
 
@@ -26,4 +32,4 @@ struct UdfpsHandlerFactory {
     void (*destroy)(UdfpsHandler* handler);
 };
 
-UdfpsHandlerFactory *getUdfpsHandlerFactory();
+UdfpsHandlerFactory* getUdfpsHandlerFactory();

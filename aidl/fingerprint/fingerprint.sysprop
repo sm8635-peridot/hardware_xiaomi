@@ -69,7 +69,7 @@ prop {
     api_name: "display_touch"
 }
 
-# whether support illumination control  by hal (default: false)
+# whether support illumination control by hal (default: false)
 prop {
     prop_name: "persist.vendor.fingerprint.udfps.control_illumination"
     type: Boolean
